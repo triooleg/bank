@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Онлайн конвертер валют</title>
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/uikit/2.27.4/css/uikit.almost-flat.min.css">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/uikit/2.27.4/js/uikit.min.js"></script>
+</head>
+<style>
+p {
+    margin: 0;
+    font-weight: bold;
+}
+
+p>span {
+    font-weight: normal;
+}
+
+.res input {
+    width: 40%;
+}
+
+select {
+    width: 100%;
+}
+
+.res i {
+    cursor: pointer;
+}
+
+.uk-icon-refresh:hover {
+    content: "\f021";
+}
+
+.uk-panel {
+    max-width: 320px;
+    margin: 0 auto;
+    box-sizing: border-box;
+}
+.uk-container {
+    padding: 0 10px;
+}
+h4 {
+    margin: 10px 0;
+}
+</style>
+
+<body>
+    <script>
+    jQuery(document).ready(function($) {
+
+        var time = new Date();
+        var day = time.getDate();
+
+        var month = time.getMonth();
+
+
+        var year = time.getFullYear();
+
+        $('#today').text(day + '.' + month + '.' + year);
+
+        $.get(
+            "https://api.privatbank.ua/p24api/pubinfo?json&exchange&coursid=5",
+            returnAll
+        );
+
+        $.get(
+            "https://api.privatbank.ua/p24api/pubinfo?json&exchange&coursid=4",
+            returnOther
+        );
+
+        var cur = {
+            'CAD': 'Канадский доллар',
+            'CHF': 'Швейцарский франк',
+            'CZK': 'Чешская крона',
+            'EUR': 'Евро',
+            'GBP': 'Фунт стерлингов',
+            'ILS': 'Израильский шекель',
+            'JPY': 'Японская Иена',
+            'NOK': 'Норвежская крона',
+            'PLZ': 'Польский злотый',
+            'RUR': 'Российский рубль',
+            'SEK': 'Шведская крона',
+            'SKK': 'Словацкая крона',
+            'USD': 'Американский доллар',
+            'BTC': 'Биткойн'
+        };
+
+        function returnAll(data) {
+            for (var i = 0; i < data.length; i++) {
+
+                // console.log(data[i]);
+                if (data[i].ccy == 'RUR' || data[i].ccy == 'USD' || data[i].ccy == 'EUR') {
+                    $('#curFirst > .in-currency').append("<option value='" + data[i].buy + "'>" + data[i].ccy + " - " + cur[data[i].ccy] + "</option>");
+                    $('#curSecond > .in-currency').append("<option value='" + data[i].buy + "'>" + data[i].ccy + " - " + cur[data[i].ccy] + "</option>");
+                }
+            }
+
+            // Здесь мы получаем данные, отправленные сервером и выводим их на экран.
+
+            $('#eurBuy').text(Number(data[1].buy));
+            $('#eurSale').text(Number(data[1].sale));
+            $('#rurBuy').text(Number(data[2].buy));
+            $('#rurSale').text(Number(data[2].sale));
+            $('#usdBuy').text(Number(data[0].buy));
+            $('#usdSale').text(Number(data[0].sale));
+
+            $('#btcBuy').text(Number(data[3].buy).toFixed(2));
+            $('#btcSale').text(Number(data[3].sale).toFixed(2));
+        }
+
+        function returnOther(data) {
+            for (var i = 0; i < data.length; i++) {
+
+                // console.log(data[i]);
+
+                $('#curFirst > .out-currency').append("<option value='" + data[i].buy + "'>" + data[i].ccy + " - " + cur[data[i].ccy] + "</option>");
+                $('#curSecond > .out-currency').append("<option value='" + data[i].buy + "'>" + data[i].ccy + " - " + cur[data[i].ccy] + "</option>");
+            }
+        }
+
+        $('#curFirst').change(function(event) {
+            // console.log($(this).find('option:selected').attr('value'));
+            $('#curSecond').find('option[value=1]').prop('selected', 'select');
+        });
+
+        $('#curSecond').change(function(event) {
+            $('#curFirst').find('option[value=1]').prop('selected', 'select');
+        });
+
+        $('#current, .uk-icon-refresh').bind('keyup', function(event) {
+            var resItem;
+            var currentVal = $('#current').val();
+            var curFirst = $('#curFirst').find('option:selected').attr('value');
+            var curFirstName = $('#curFirst').find('option:selected').val();
+            var curSecondName = $('#curFirst').find('option:selected').val();
+            var curSecond = $('#curSecond').find('option:selected').attr('value');
+
+            if (curFirst == 1) {
+                resItem = (currentVal * curFirst / curSecond).toFixed(2);
+            }
+            if (curSecond == 1) {
+                resItem = (currentVal * curSecond * curFirst).toFixed(2);
+            }
+
+            $('#result').val(resItem);
+        });
+
+
+    });
+    </script>
+    <div class="uk-container uk-container-center">
+        <h4 class="uk-text-center uk-text-uppercase">Онлайн курсы валют на: <span id="today"></span></h4>
+        <div class="uk-panel uk-panel-box uk-margin-bottom">
+            <div class="uk-panel-badge uk-badge uk-badge-success">ПБ</div>
+            <h3 class="uk-panel-title">Курсы валют</h3>
+            <table class="uk-table uk-table-hover uk-table-striped uk-table-condensed">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>покупка</th>
+                        <th>продажа</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>RUR</td>
+                        <td><span id="rurBuy"></span></td>
+                        <td><span id="rurSale"></span></td>
+                    </tr>
+                    <tr>
+                        <td>EUR</td>
+                        <td><span id="eurBuy"></span></td>
+                        <td><span id="eurSale"></span></td>
+                    </tr>
+                    <tr>
+                        <td>USD</td>
+                        <td><span id="usdBuy"></span></td>
+                        <td><span id="usdSale"></span></td>
+                    </tr>
+                    <tr>
+                        <td>BTC*</td>
+                        <td><span id="btcBuy"></span></td>
+                        <td><span id="btcSale"></span></td>
+                    </tr>
+                </tbody>
+            </table>
+            <p class="uk-text-small uk-text-right">* BTC/USD</p>
+        </div>
+        <div class="uk-panel uk-panel-box">
+            <div class="uk-panel-badge uk-badge uk-badge-warning"><i class="uk-icon-refresh"></i></div>
+            <h3 class="uk-panel-title">Конвертер валют</h3>
+            <form action="" class="uk-form uk-form-stacked">
+                <div class="uk-form-row">
+                    <label for="" class="uk-form-label">Валюта:</label>
+                    <div class="uk-form-controls">
+                        <select id="curFirst">
+                            <optgroup label="Основные валюты" class="in-currency">
+                                <option selected="select" value="1">UAН - Украинская гривна</option>
+                            </optgroup>
+                            <optgroup label="Валюты мира" class="out-currency"></optgroup>
+                        </select>
+                    </div>
+                </div>
+                <div class="uk-form-row">
+                    <label for="" class="uk-form-label">В какую валюту:</label>
+                    <div class="uk-form-controls">
+                        <select id="curSecond">
+                            <optgroup label="Основные валюты" class="in-currency">
+                                <option selected="select" value="1">UAН - Украинская гривна</option>
+                            </optgroup>
+                            <optgroup label="Валюты мира" class="out-currency"></optgroup>
+                        </select>
+                    </div>
+                </div>
+                <div class="uk-form-row res">
+                    <input type="number" id="current">
+                    <i class="uk-icon-button uk-icon-refresh"></i>
+                    <input type="text" id="result" disabled="disabled">
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+
+</html>
