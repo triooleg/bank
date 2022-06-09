@@ -1,4 +1,4 @@
 # bank
 Currency converter based on Privatbank API
 
-https://triooleg/github.io/bank
+https://triooleg.github.io/bank
